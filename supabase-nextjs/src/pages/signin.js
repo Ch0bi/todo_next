@@ -25,9 +25,9 @@ import {
       setIsLoading(true);
       setError(null);
       try {
-        const { error } = await supabaseClient.auth.signIn({
-          email,
-        });
+       const { data, error } = await supabaseClient.auth.signInWithOtp({
+  email
+})
         if (error) {
           setError(error.message);
         } else {

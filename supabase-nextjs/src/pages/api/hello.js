@@ -1,5 +1,5 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import { supabaseClient } from "../../lib/client";
 
 export default function handler(req, res) {
-  res.status(200).json({ name: 'John Doe' })
+  supabaseClient.auth.api.setAuthCookie(req, res);
 }
