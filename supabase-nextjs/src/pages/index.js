@@ -1,12 +1,17 @@
+import { useDisclosure } from "@chakra-ui/hooks";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import ManageTodo from "../components/ManageTodo";
 import Navbar from "../components/Navbar";
 import { supabaseClient } from "../lib/client";
 
 const Home = () => {
+  const initialRef = useRef();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const router = useRouter();
-  const user = supabaseClient.auth.currentUser;
+  const user = supabaseClient.auth.user();
 
   useEffect(() => {
     if (!user) {
@@ -25,7 +30,8 @@ const Home = () => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main>
-        <Navbar />
+        <Navbar onOpen={onOpen} />
+        <ManageTodo isOpen={isOpen} onClose={onClose} initialRef={initialRef} />
       </main>
     </div>
   );

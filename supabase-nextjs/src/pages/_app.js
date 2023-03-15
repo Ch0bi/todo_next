@@ -6,25 +6,23 @@ import customTheme from "../lib/theme";
 
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
-  const user = supabaseClient.auth.currentUser;
+  const user = supabaseClient.auth.user();
 
   useEffect(() => {
     const { data: authListener } = supabaseClient.auth.onAuthStateChange(
       (event, session) => {
         handleAuthSession(event, session);
         if (event === "SIGNED_IN") {
-          const signedInUser = supabaseClient.auth.currentUser;
-          if (signedInUser) {
-            const userId = signedInUser.id;
-            supabaseClient
-              .from("profiles")
-              .upsert({ id: userId })
-              .then((_data, error) => {
-                if (!error) {
-                  router.push("/");
-                }
-              });
-          }
+          const signedInUser = supabaseClient.auth.user();
+          const userId = signedInUser.id;
+          supabaseClient
+            .from("profiles")
+            .upsert({ id: userId })
+            .then((_data, error) => {
+              if (!error) {
+                router.push("/");
+              }
+            });
         }
         if (event === "SIGNED_OUT") {
           router.push("/signin");
@@ -33,7 +31,7 @@ function MyApp({ Component, pageProps }) {
     );
 
     return () => {
-      authListener?.subscription.unsubscribe()
+      authListener.unsubscribe();
     };
   }, [router]);
 
