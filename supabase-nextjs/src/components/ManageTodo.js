@@ -44,7 +44,7 @@ const ManageTodo = ({ isOpen, onClose, initialRef, todo, setTodo }) => {
       return;
     }
     setIsLoading(true);
-    const user = supabaseClient.auth.user();
+    const user = supabaseClient.auth.user;
     let supabaseError;
     if (todo) {
       const { error } = await supabaseClient

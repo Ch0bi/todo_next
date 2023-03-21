@@ -11,23 +11,37 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabaseClient } from "../lib/client";
+import { useRouter } from "next/router";
+
+
 
 const SignIn = () => {
+  const router = useRouter(); 
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState(null);
+
+
+  useEffect(() => {
+    if (router.query.access_token) {
+      supabaseClient.auth.signIn({ accessToken: router.query.access_token });
+    }
+  }, [router.query]);
+
+
 
   const submitHandler = async (event) => {
     event.preventDefault();
     setIsLoading(true);
     setError(null);
     try {
-      const { error } = await supabaseClient.auth.signIn({
-        email,
-      });
+      const { error } = await supabaseClient
+      .auth
+      .signInWithOtp({ email })
+
       if (error) {
         setError(error.message);
       } else {

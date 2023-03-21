@@ -13,17 +13,62 @@ const Home = () => {
   const [todos, setTodos] = useState([]);
   const [todo, setTodo] = useState(null);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+
+  
   const router = useRouter();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const user = supabaseClient.auth.user();
+  const user = supabaseClient.auth.session?.user;
+
+
+  const fetchTodos = async () => {
+    const { data, error } = await supabaseClient
+      .from("todos")
+      .select("*")
+      .eq("user_id", user?.id)
+      .order("id", { ascending: false });
+
+    if (!error) {
+      setTodos(data);
+    }
+  };
+
+  useEffect(() => {
+    // Add an event listener for when the session changes
+    const { data: authListener } = supabaseClient.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_IN") {
+          setLoading(false);
+        } else if (event === "SIGNED_OUT") {
+          router.push("/signin");
+        }
+      }
+    );
+
+    // Check for an existing user session
+    const user = supabaseClient.auth.session?.user;
+    if (user) {
+      setLoading(false);
+    } else {
+      router.push("/");
+    }
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [router]);
+
 
   useEffect(() => {
     if (!user) {
-      router.push("/signin");
+      router.push("/");
+    } else {
+      fetchTodos();
     }
   }, [user, router]);
 
+  
   useEffect(() => {
     if (user) {
       supabaseClient
@@ -41,7 +86,7 @@ const Home = () => {
 
   useEffect(() => {
     const todoListener = supabaseClient
-      .from("todos")
+      .channel("todos")
       .on("*", (payload) => {
         if (payload.eventType !== "DELETE") {
           const newTodo = payload.new;
@@ -105,7 +150,8 @@ const Home = () => {
           todo={todo}
           setTodo={setTodo}
         />
-        <HStack m="10" spacing="4" justify="center">
+        <HStack m="
+10" spacing="4" justify="center">
           <Box>
             <Tag bg="green.500" borderRadius="3xl" size="sm" mt="1" /> Complete
           </Box>
