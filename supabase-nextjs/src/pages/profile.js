@@ -23,7 +23,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isImageUploadLoading, setIsImageUploadLoading] = useState(false);
 
-  const user = supabaseClient.auth.user();
+  const user = supabaseClient.auth.session?.user;
 
   useEffect(() => {
     if (user) {
@@ -47,7 +47,8 @@ const Profile = () => {
     event.preventDefault();
     setIsLoading(true);
     const body = { username, website, bio };
-    const userId = user.id;
+    const signedInUser = session.user;
+          const userId = signedInUser.id;
     const { error } = await supabaseClient
       .from("profiles")
       .update(body)
